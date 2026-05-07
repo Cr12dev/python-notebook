@@ -1,5 +1,10 @@
 import pandas as pd
 import streamlit as st
+import sqlite3 as sql
+
+# Abrir una nueva conexion con la base de datos
+con = sql.connect('valencia.db')
+cur = con.cursor()
 
 # Creacion de la UI
 st.title("""
@@ -34,6 +39,33 @@ if file_uploader is not None or url_uploader:
 
     st.write("Analyze all Airbnb data for the city of Valencia")
     st.bar_chart(promedios_ordenados)
+
+    try:
+        # Guardar los datos en la base de datos
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS valencia (
+                vecindario TEXT,
+                precio INT
+            )
+        ''')
+
+        for vecindario, datos in df.groupby("neighbourhood"):
+            precio = datos["price"].mean()
+
+            cur.execute('''
+                INSERT INTO valencia (vecindario, precio)
+                VALUES (?, ?)
+            ''', (vecindario, precio))
+
+        # Llamar a la tabla de la base de datos
+        cur.execute('SELECT * FROM valencia')
+
+        for row in cur.fetchall():
+            print(row)
+
+    except sql.OperationalError as e:
+        print(f"Database error: {e}")
+   
 
 else:
     st.write("Error: insert a valid file or URL")
