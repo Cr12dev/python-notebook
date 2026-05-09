@@ -25,3 +25,6 @@
 
 # `astype()`
 - Conversions explicita de tipos
+
+# `loc(fila, columna)`
+- Para acceder a un valor especifico
